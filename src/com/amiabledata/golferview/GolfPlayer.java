@@ -30,6 +30,13 @@ class GolfPlayer {
 			setScores(scores);
 		}
 	}
+	
+	/*
+	 * Creates a new golf player.
+	 */
+	public GolfPlayer() {
+		this(new String(), null);
+	}
 
 	/*
 	 * Creates a new golf player with name.

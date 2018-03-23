@@ -3,6 +3,7 @@ package com.amiabledata.golferview;
 import java.util.ArrayList;
 import java.util.Iterator;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 /*
  * A class for golf team.
@@ -20,6 +21,13 @@ public class GolfTeam {
 	private ArrayList<GolfPlayer> players = new ArrayList<GolfPlayer>();
 	
 	/*
+	 * Creates a new golf team.
+	 */
+	public GolfTeam() {
+		this(new String());
+	}
+	
+	/*
 	 * Creates a new golf team with name.
 	 * 
 	 * @param name 		Name of the team.
@@ -35,6 +43,7 @@ public class GolfTeam {
 	 */
 	public GolfTeam(GolfTeam inst) {
 		setName(inst.getName());
+		players = inst.getPlayers();
 	}
 	
 	/*
@@ -100,7 +109,7 @@ public class GolfTeam {
 	public ArrayList<GolfPlayer> getPlayers() {
 		ArrayList<GolfPlayer> r = new ArrayList<GolfPlayer>();
 		for (Iterator<GolfPlayer> i = this.players.iterator(); i.hasNext();) {
-		    r.add(new GolfPlayer(i.next()));
+		    r.add(i.next());
 		}
 		return r;
 	}
@@ -166,6 +175,17 @@ public class GolfTeam {
 	}
 	
 	/*
+	 * Serialize this golf team into JsonObject.
+	 * 
+	 * @return JsonObject instance.
+	 */
+	public JsonObject toJSONObject() {
+		return new GsonBuilder().setPrettyPrinting().serializeNulls()
+								.create()
+								.toJsonTree(this).getAsJsonObject();
+	}
+	
+	/*
 	 * Deserialize a golf team from JSON.
 	 * 
 	 * @param json		A string containing JSON.
@@ -173,6 +193,18 @@ public class GolfTeam {
 	 * @return A golf team instance.
 	 */
 	public static GolfTeam fromJSON(String json) {
+		return new GsonBuilder().create()
+								.fromJson(json, GolfTeam.class);
+	}
+	
+	/*
+	 * Deserialize a golf team from JSON.
+	 * 
+	 * @param json		A JsonObject instance.
+	 * 
+	 * @return A golf team instance.
+	 */
+	public static GolfTeam fromJSON(JsonObject json) {
 		return new GsonBuilder().create()
 								.fromJson(json, GolfTeam.class);
 	}
