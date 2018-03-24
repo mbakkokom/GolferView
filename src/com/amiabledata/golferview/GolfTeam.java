@@ -1,6 +1,7 @@
 package com.amiabledata.golferview;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -159,6 +160,51 @@ public class GolfTeam {
 		int ret = 0;
 		for (Iterator<GolfPlayer> it = this.players.iterator(); it.hasNext(); ) {
 			ret += it.next().getTotalScore(round);
+		}
+		return ret;
+	}
+	
+	/*
+	 * Gets board total score of the team.
+	 * 
+	 * @return Board total score of the team.
+	 */
+	public int getBoardTotalScore() {
+		int ret = 0;
+		int[] scores = new int[this.players.size()];
+		for (int i=0; i<scores.length; i++) {
+			scores[i] = this.players.get(i).getTotalScore();
+		}
+		Arrays.sort(scores);
+		if (scores.length > 4) {
+			scores = Arrays.copyOfRange(scores, scores.length-4, scores.length);
+		}
+		for (int i=0; i<scores.length; i++) {
+			ret += scores[i];
+		}
+		return ret;
+	}
+	
+	/*
+	 * Gets board total score of the team for a given round.
+	 * 
+	 * @param round		Round number of the game minus one (counting from 0).
+	 * 
+	 * @throws ArrayIndexOutOfBoundsException If the round is invalid.
+	 * @return Board total score of the team.
+	 */
+	public int getBoardTotalScore(int round) {
+		int ret = 0;
+		int[] scores = new int[this.players.size()];
+		for (int i=0; i<scores.length; i++) {
+			scores[i] = this.players.get(i).getTotalScore(round);
+		}
+		Arrays.sort(scores);
+		if (scores.length > 4) {
+			scores = Arrays.copyOfRange(scores, scores.length-4, scores.length);
+		}
+		for (int i=0; i<scores.length; i++) {
+			ret += scores[i];
 		}
 		return ret;
 	}

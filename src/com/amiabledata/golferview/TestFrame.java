@@ -47,8 +47,7 @@ public class TestFrame extends JFrame {
 	JCheckBoxMenuItem menuViewShowDetails;
 	
 	private ArrayList<GolfTeam> teams = new ArrayList<GolfTeam>();
-	
-	private boolean showDetailedPlayerScore = false;
+
 	private int lastTeamIndex=-1, lastPlayerIndex=-1;
 
 	/**
@@ -96,7 +95,7 @@ public class TestFrame extends JFrame {
 		    		return;
 		    	}
 		    	
-		    	if (showDetailedPlayerScore != true || lastPlayerIndex == -1) {
+		    	if (menuViewShowDetails.isSelected() != true || lastPlayerIndex == -1) {
 		    		lastTeamIndex = getTeamsTableSelectedIndex();
 		    		setupPlayersTable();
 		    	} else {
@@ -130,7 +129,7 @@ public class TestFrame extends JFrame {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				menuViewShowDetails.setSelected(showDetailedPlayerScore = false);
+				menuViewShowDetails.setSelected(false);
 				teams.clear();
 				setupTeamsTable();
 				setupPlayersTable();
@@ -203,32 +202,93 @@ public class TestFrame extends JFrame {
 		menuFile.add(menuFileExit);
 		
 		// --
-		// TODO
-		/*
 		JMenu menuTeam = new JMenu("Team");
 		menuTeam.setMnemonic('T');
 		menuBar.add(menuTeam);
 		
 		JMenuItem menuTeamNew = new JMenuItem("New");
+		menuTeamNew.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String ret = JOptionPane.showInputDialog(getRootPane(), "Name of the team:", "New Team", JOptionPane.QUESTION_MESSAGE);
+				if (ret != null && ret.length() > 0) {
+					teams.add(new GolfTeam(ret));
+					setupTeamsTable();
+				} else {
+					JOptionPane.showMessageDialog(getRootPane(), "Team name cannot be empty!", "New Team", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+		});
 		menuTeam.add(menuTeamNew);
 		
 		JMenuItem menuTeamRemove = new JMenuItem("Remove");
+		menuTeamRemove.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (lastTeamIndex >= 0) {
+					teams.remove(lastTeamIndex);
+					
+					lastTeamIndex = -1;
+					lastPlayerIndex = -1;
+					
+					setupTeamsTable();
+					setupPlayersTable();
+				} else {
+					JOptionPane.showMessageDialog(getRootPane(), "You must select a team to remove!", "Remove Team", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+		});
 		menuTeam.add(menuTeamRemove);
-		*/
 		
 		// --
-		// TODO
-		/*
 		JMenu menuPlayer = new JMenu("Player");
 		menuPlayer.setMnemonic('l');
 		menuBar.add(menuPlayer);
 				
 		JMenuItem menuPlayerNew = new JMenuItem("New");
+		menuPlayerNew.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (lastTeamIndex == -1) {
+					JOptionPane.showMessageDialog(getRootPane(), "You must select a team for the new player!", "New Player", JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
+				String ret = JOptionPane.showInputDialog(getRootPane(), "Name of the player:", "New Player", JOptionPane.QUESTION_MESSAGE);
+				if (ret != null && ret.length() > 0) {
+					teams.get(lastTeamIndex).newPlayer(ret);
+					setupPlayersTable();
+				} else {
+					JOptionPane.showMessageDialog(getRootPane(), "Player name cannot be empty!", "New Player", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+		});
 		menuPlayer.add(menuPlayerNew);
 				
 		JMenuItem menuPlayerRemove = new JMenuItem("Remove");
+		menuPlayerRemove.addActionListener(new ActionListener() {
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (lastTeamIndex >= 0 && lastPlayerIndex >= 0) {
+					teams.get(lastTeamIndex).removePlayer(lastPlayerIndex);
+					
+					lastPlayerIndex = -1;
+					
+					setupPlayersTable();
+				} else {
+					JOptionPane.showMessageDialog(getRootPane(), "You must select a team then a player to remove!", "Remove Player", JOptionPane.ERROR_MESSAGE);
+				}
+			}
+			
+		});
 		menuPlayer.add(menuPlayerRemove);
-		*/
 		
 		// --
 		JMenu menuView = new JMenu("View");
@@ -237,13 +297,17 @@ public class TestFrame extends JFrame {
 		
 		menuViewShowDetails = new JCheckBoxMenuItem("Show details");
 		menuViewShowDetails.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.META_DOWN_MASK));
-		menuViewShowDetails.setSelected(showDetailedPlayerScore);
+		menuViewShowDetails.setSelected(false);
 		menuViewShowDetails.addActionListener(new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				JCheckBoxMenuItem chk = (JCheckBoxMenuItem)e.getSource();
-				showDetailedPlayerScore = chk.isSelected();
+				int nw = getTeamsTableSelectedIndex();
+				System.out.println(nw);
+				if (((JCheckBoxMenuItem) e.getSource()).isSelected() == false && nw != lastTeamIndex) {
+					lastTeamIndex = nw;
+					lastPlayerIndex = -1;
+				}
 				setupPlayersTable();
 			}
 			
@@ -255,7 +319,8 @@ public class TestFrame extends JFrame {
 	
 	protected int getTeamsTableSelectedIndex() {
 		final DefaultListSelectionModel target = (DefaultListSelectionModel) teamsTable.getSelectionModel();
-        return target.getAnchorSelectionIndex();
+        //return target.getAnchorSelectionIndex();
+		return target.getLeadSelectionIndex();
 	}
 	
 	protected int getPlayersTableSelectedIndex() {
@@ -281,10 +346,10 @@ public class TestFrame extends JFrame {
 			GolfTeam team = it.next();
 			
 			t.add(team.getName());
-			t.add("" + team.getTotalScore(0));
-			t.add("" + team.getTotalScore(1));
-			t.add("" + team.getTotalScore(2));
-			t.add("" + team.getTotalScore());
+			t.add("" + team.getBoardTotalScore(0));
+			t.add("" + team.getBoardTotalScore(1));
+			t.add("" + team.getBoardTotalScore(2));
+			t.add("" + team.getBoardTotalScore());
 			
 			data.add(t);
 		}
@@ -299,7 +364,7 @@ public class TestFrame extends JFrame {
 		int index = lastTeamIndex;
 		int playerIndex = lastPlayerIndex;
 		
-		System.out.println("Need detailed player info: " + showDetailedPlayerScore);
+		System.out.println("Need detailed player info: " + menuViewShowDetails.isSelected());
 		System.out.println("Team index: " + index);
 		System.out.println("Player index: " + playerIndex);
         
@@ -309,16 +374,16 @@ public class TestFrame extends JFrame {
         	return;
         }
         
-        ArrayList<GolfPlayer> players = this.teams.get(index).getPlayers();
-        
         Vector<String> header = new Vector<String>();
 		Vector<Vector<String>> data = new Vector<Vector<String>>();
 		
-		if (showDetailedPlayerScore == false) {
+		ArrayList<GolfPlayer> players = this.teams.get(index).getPlayers();
+		
+		if (menuViewShowDetails.isSelected() == false) {
 			setTitle("Team: " + this.teams.get(index).getName());
 			
 			header.add("Player Name");
-			header.add("H1");
+			header.add("R1");
 			header.add("R2");
 			header.add("R3");
 			header.add("Total");
@@ -404,10 +469,17 @@ public class TestFrame extends JFrame {
 
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+			String str = new String((String) aValue);
+			
+			if (str.length() == 0) {
+				JOptionPane.showMessageDialog(getRootPane(), "Value cannot be empty.", "Editing error!", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			
 			if (columnIndex != 0) {
 				JOptionPane.showMessageDialog(getRootPane(), "Round total scores cannot be directly edited!", "No editing allowed", JOptionPane.ERROR_MESSAGE);
 			} else {
-				teams.get(rowIndex).setName(new String((String) aValue));
+				teams.get(rowIndex).setName(str);
 				setupTeamsTable();
 			}
 		}
@@ -431,18 +503,24 @@ public class TestFrame extends JFrame {
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			int index = getTeamsTableSelectedIndex();
+			String str = new String((String) aValue);
 			
-			if (showDetailedPlayerScore == false) {
+			if (str.length() == 0) {
+				JOptionPane.showMessageDialog(getRootPane(), "Value cannot be empty.", "Editing error!", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
+			
+			if (menuViewShowDetails.isSelected() == false) {
 				if (columnIndex != 0) {
 					JOptionPane.showMessageDialog(getRootPane(), "Round total scores cannot be directly edited!", "No editing allowed", JOptionPane.ERROR_MESSAGE);
 				} else if (index >= 0) {
-					teams.get(index).getPlayer(rowIndex).setName(new String((String) aValue));
+					teams.get(index).getPlayer(rowIndex).setName(str);
 					setupPlayersTable();
 				}
 			} else {
 				if (rowIndex >= 0 && rowIndex <= 2 && columnIndex >= 1 && columnIndex <= 18) {
 					try {
-						teams.get(index).getPlayer(getPlayersTableSelectedIndex()).setScore(rowIndex, columnIndex-1, Integer.parseInt((String) aValue));
+						teams.get(index).getPlayer(getPlayersTableSelectedIndex()).setScore(rowIndex, columnIndex-1, Integer.parseInt(str));
 					} catch (NumberFormatException e) {
 						JOptionPane.showMessageDialog(getRootPane(), "Invalid integer entered for score.", "Editing error!", JOptionPane.ERROR_MESSAGE);
 					}
