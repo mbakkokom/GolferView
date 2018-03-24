@@ -171,16 +171,8 @@ public class GolfTeam {
 	 */
 	public int getBoardTotalScore() {
 		int ret = 0;
-		int[] scores = new int[this.players.size()];
-		for (int i=0; i<scores.length; i++) {
-			scores[i] = this.players.get(i).getTotalScore();
-		}
-		Arrays.sort(scores);
-		if (scores.length > 4) {
-			scores = Arrays.copyOfRange(scores, scores.length-4, scores.length);
-		}
-		for (int i=0; i<scores.length; i++) {
-			ret += scores[i];
+		for (int i=0; i<3; i++) {
+			ret += getBoardTotalScore(i);
 		}
 		return ret;
 	}
@@ -200,9 +192,7 @@ public class GolfTeam {
 			scores[i] = this.players.get(i).getTotalScore(round);
 		}
 		Arrays.sort(scores);
-		if (scores.length > 4) {
-			scores = Arrays.copyOfRange(scores, scores.length-4, scores.length);
-		}
+		scores = Arrays.copyOfRange(scores, 0, 4);
 		for (int i=0; i<scores.length; i++) {
 			ret += scores[i];
 		}

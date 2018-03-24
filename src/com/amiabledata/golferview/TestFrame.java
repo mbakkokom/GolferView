@@ -95,7 +95,7 @@ public class TestFrame extends JFrame {
 		    		return;
 		    	}
 		    	
-		    	if (menuViewShowDetails.isSelected() != true || lastPlayerIndex == -1) {
+		    	if (menuViewShowDetails.isSelected() != true) {
 		    		lastTeamIndex = getTeamsTableSelectedIndex();
 		    		setupPlayersTable();
 		    	} else {
@@ -303,7 +303,6 @@ public class TestFrame extends JFrame {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				int nw = getTeamsTableSelectedIndex();
-				System.out.println(nw);
 				if (((JCheckBoxMenuItem) e.getSource()).isSelected() == false && nw != lastTeamIndex) {
 					lastTeamIndex = nw;
 					lastPlayerIndex = -1;
@@ -335,6 +334,8 @@ public class TestFrame extends JFrame {
 		Vector<String> header = new Vector<String>();
 		Vector<Vector<String>> data = new Vector<Vector<String>>();
 		
+		int index = lastTeamIndex;
+		
 		header.add("Team Name");
 		header.add("R1");
 		header.add("R2");
@@ -355,8 +356,10 @@ public class TestFrame extends JFrame {
 		}
 		
 		teamsTable.setModel(new TeamsTableModel(data, header));
-		if (lastTeamIndex >= 0) {
-			((DefaultListSelectionModel) teamsTable.getSelectionModel()).setAnchorSelectionIndex(lastTeamIndex);
+		if (index >= 0) {
+			DefaultListSelectionModel sel = (DefaultListSelectionModel) teamsTable.getSelectionModel();
+			sel.setAnchorSelectionIndex(index);
+			sel.setLeadSelectionIndex(index);
 		}
 	}
 	
@@ -502,7 +505,7 @@ public class TestFrame extends JFrame {
 
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			int index = getTeamsTableSelectedIndex();
+			int index = lastTeamIndex;
 			String str = new String((String) aValue);
 			
 			if (str.length() == 0) {
@@ -520,7 +523,8 @@ public class TestFrame extends JFrame {
 			} else {
 				if (rowIndex >= 0 && rowIndex <= 2 && columnIndex >= 1 && columnIndex <= 18) {
 					try {
-						teams.get(index).getPlayer(getPlayersTableSelectedIndex()).setScore(rowIndex, columnIndex-1, Integer.parseInt(str));
+						teams.get(index)
+							 .getPlayer(getPlayersTableSelectedIndex()).setScore(rowIndex, columnIndex-1, Integer.parseInt(str));
 					} catch (NumberFormatException e) {
 						JOptionPane.showMessageDialog(getRootPane(), "Invalid integer entered for score.", "Editing error!", JOptionPane.ERROR_MESSAGE);
 					}
